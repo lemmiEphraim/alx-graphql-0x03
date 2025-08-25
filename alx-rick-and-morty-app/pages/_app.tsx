@@ -1,12 +1,17 @@
 import ErrorBoundary from '@/components/ErrorBoundary';
-import type { AppProps } from "next/app";
+import ErrorProneComponent from '@/components/ErrorProneComponent';
 
-function MyApp({ Component, pageProps }: AppProps) {
+const Home: React.FC = () => {
   return (
-    <ErrorBoundary>
-      <Component {...pageProps} />
-    </ErrorBoundary>
+    <div>
+      <h1>Welcome to Rick and Morty App</h1>
+      <p>This is a test page for ErrorBoundary functionality.</p>
+      
+      <ErrorBoundary>
+        <ErrorProneComponent />
+      </ErrorBoundary>
+    </div>
   );
-}
+};
 
-export default MyApp;
+export default Home;
