@@ -1,41 +1,68 @@
-import ErrorBoundary from './components/ErrorBoundary';
+import React, { ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 
-function App() {
-  return (
-    <ErrorBoundary>
-      {/* Your app content here */}
-    </ErrorBoundary>Objective: Integrate the ErrorBoundary component into your Next.js application by wrapping the main component.
-
-Instructions:
-
-Open thepages/_app.tsx file.
-
-Import the ErrorBoundary component.
-
-Wrap the Component prop in the ErrorBoundary:
-
-import ErrorBoundary from '@/components/ErrorBoundary';
-import type { AppProps } from "next/app";
-
-
-
-function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <ErrorBoundary>
-      <Component {...pageProps} />
-    </ErrorBoundary>
-  );
+interface State {
+  hasError: boolean;
+  error?: Error;
 }
 
-export default MyApp;
-
-Save and close your files
-Run npm run dev from the terminal
-From a tab in your browser type http://localhost:3000 to see the changes made.
-Repo:
-
-GitHub repository: alx-graphql-0x03
-Directory: alx-rick-and-morty-app
-File: README.md, pages/_app.tsx
-  );
+interface ErrorBoundaryProps {
+  children: ReactNode;
 }
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Log error to Sentry
+    Sentry.captureException(error, { 
+      extra: errorInfo,
+      tags: {
+        error_boundary: true,
+      }
+    });
+    
+    // You can also log to console for development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Error caught by boundary:', error, errorInfo);
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <h2>Oops, there is an error!</h2>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false });
+              window.location.reload();
+            }}
+            style={{
+              padding: '10px 20px',
+              fontSize: '16px',
+              cursor: 'pointer',
+              backgroundColor: '#0070f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px'
+            }}
+          >
+            Try again?
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
